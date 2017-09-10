@@ -3,11 +3,12 @@
 import time
 import os
 import sys
-# CM19a module
+# CM19a module from https://github.com/Cuddon/cm19a
 import CM19aDriver
 
 # *************** CONFIGURATION ***************
 POLLFREQ = 1   # Polling Frequency - Check for inbound commands every 1 second
+# pinging Google's anycast DNS server
 HOST = '8.8.8.8'
 # FAILURE needs to be determined by what the system ping returns
 FAILURE = '0 received'
@@ -132,6 +133,32 @@ def openspot():
                 lamp();
         os.remove('/tmp/openspot-off')
 
+def radio():
+    if (os.path.exists('/tmp/radio-on')):
+        if cm19a.initialised:
+            print "Turning on radio..."
+            print time.ctime()
+            result = cm19a.send("C", "5", "on")
+            if result:
+                print "...Success"
+            else:
+                print  >> sys.stderr, "Command failed"
+                lamp();
+        os.remove('/tmp/radio-on')
+    if (os.path.exists('/tmp/radio-off')):
+        if cm19a.initialised:
+            print "Turning off radio..."
+            print time.ctime()
+            for i in range (0,5):
+                result = cm19a.send("C", "5", "off")
+                time.sleep(2)
+            if result:
+                print "...Success"
+            else:
+                print  >> sys.stderr, "Command failed"
+                lamp();
+        os.remove('/tmp/radio-off')
+
 def reboot():
     if (os.path.exists('/tmp/reboot')):
         if cm19a.initialised:
@@ -156,6 +183,7 @@ def control():
     lamp()
     basement()
     openspot()
+    radio()
     program()
     reboot()
 
